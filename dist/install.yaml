@@ -434,7 +434,7 @@ spec:
         - --health-probe-bind-address=:8081
         command:
         - /manager
-        image: docker.io/shawbikash521/k8s-ec2-operator:v2
+        image: docker.io/shawbikash521/k8s-ec2-operator:v3
         name: manager
         livenessProbe:               
           httpGet:                   
