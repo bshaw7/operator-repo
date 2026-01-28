@@ -82,11 +82,53 @@ func (r *Ec2InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// Check if we already have an instance ID in status
-	if ec2Instance.Status.InstanceID != "" {
-		l.Info("Requested object already exists in Kubernetes. Not creating a new instance.", "instanceID", ec2Instance.Status.InstanceID)
 
+	// OLD code which only check instance id in k8s resource not on aws
+	// if ec2Instance.Status.InstanceID != "" {
+	// 	l.Info("Requested object already exists in Kubernetes. Not creating a new instance.", "instanceID", ec2Instance.Status.InstanceID)
+
+	// 	return ctrl.Result{}, nil
+	// }
+
+	// New logic to check in k8s and aws as well if instance already exist
+
+	if ec2Instance.Status.InstanceID != "" {
+		// 1. USE THE UNUSED FUNCTION: Check AWS Reality
+		exists, awsInstance, err := checkEC2InstanceExists(ctx, ec2Instance.Status.InstanceID, ec2Instance)
+		if err != nil {
+			l.Error(err, "Failed to check if instance exists in AWS")
+			return ctrl.Result{}, err
+		}
+
+		// 2. SELF-HEALING: If AWS says "Not Found" or "Terminated"
+		if !exists || string(awsInstance.State.Name) == "terminated" {
+			l.Info("Instance found in Status but missing/terminated in AWS. Triggering recreation.", "ID", ec2Instance.Status.InstanceID)
+
+			// Reset the Status ID to empty.
+			// In the NEXT loop, the operator will see empty ID and create a new one.
+			ec2Instance.Status.InstanceID = ""
+			ec2Instance.Status.State = "Terminated"
+			if err := r.Status().Update(ctx, ec2Instance); err != nil {
+				l.Error(err, "Failed to reset status for recreation")
+				return ctrl.Result{}, err
+			}
+			// Requeue immediately to start fresh
+			return ctrl.Result{Requeue: true}, nil
+		}
+
+		// 3. SYNC STATE: If it exists, update the status to match AWS (e.g. "pending" -> "running")
+		if ec2Instance.Status.State != string(awsInstance.State.Name) {
+			l.Info("Updating Instance State", "Old", ec2Instance.Status.State, "New", awsInstance.State.Name)
+			ec2Instance.Status.State = string(awsInstance.State.Name)
+			if err := r.Status().Update(ctx, ec2Instance); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		// It exists and is healthy. Stop.
 		return ctrl.Result{}, nil
 	}
+
 	l.Info("Creating new instance")
 
 	l.Info("=== ABOUT TO ADD FINALIZER ===")
