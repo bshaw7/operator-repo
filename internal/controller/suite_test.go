@@ -32,7 +32,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	computev1 "github.com/shkatara/ec2Operator/api/v1"
+	computev1 "github.com/bshaw7/operator-repo/api/v1"
 	// +kubebuilder:scaffold:imports
 )
 

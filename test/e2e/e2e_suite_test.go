@@ -25,7 +25,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/shkatara/ec2Operator/test/utils"
+	"github.com/bshaw7/operator-repo/test/utils"
 )
 
 var (

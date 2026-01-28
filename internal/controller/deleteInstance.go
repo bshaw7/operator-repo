@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	computev1 "github.com/shkatara/ec2Operator/api/v1"
+	computev1 "github.com/bshaw7/operator-repo/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 

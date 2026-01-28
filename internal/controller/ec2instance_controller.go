@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	computev1 "github.com/shkatara/ec2Operator/api/v1"
+	computev1 "github.com/bshaw7/operator-repo/api/v1"
 )
 
 // Ec2InstanceReconciler is a struct that implements the logic for reconciling Ec2Instance custom resources.
